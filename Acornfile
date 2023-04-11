@@ -1,0 +1,81 @@
+containers: {
+    shopapi: {
+        image: "devteds/demo-bookstore-shopapi:1.0"
+        scale: 1
+        labels: {
+            app: "shopapi"
+        }
+        dirs: {
+            "/app/config/app_secret": "secret://secretvolume"
+        }
+        env: {
+            "DB_HOST": localData.config.dbConfig.dbHost
+            "DB_NAME": localData.config.dbConfig.dbName
+            "DB_USER": localData.config.dbConfig.dbUser
+            "RAILS_ENV": localData.config.railsConfig.env
+            "RAILS_LOG_TO_STDOUT": localData.config.railsConfig.stdout
+        }
+        ports: "3000:3000/tcp"
+    }
+    shopui: {
+        image: "devteds/demo-bookstore-shopui:1.0"
+        ports: "80:80/http"
+        scale: 1
+    }
+    web: {
+        image: "devteds/demo-bookstore-website:1.0"
+        scale: 2
+        ports: publish: "80:80/http"
+    }
+    shopapidb: {
+        image: "mysql/mysql-server:8.0.23"
+        env: {
+            "DB_HOST": localData.config.dbConfig.dbHost
+            "MYSQL_DATABASE": localData.config.dbConfig.dbName
+            "MYSQL_USER": localData.config.dbConfig.dbUser
+            "MYSQL_ROOT_PASSWORD": "secret://secretvolume"
+            "MYSQL_PASSWORD": "secret://password"
+        }
+        ports: "3306:3306/tcp"
+    }
+}
+
+
+routers: {
+    shop: {
+        routes: {
+            "/": "web:80"
+            "/api/books": "shopapi:3000"
+            "/shop": "shopui:80"
+        }
+    }
+}
+
+secrets: {
+    secretvolume: {
+        type: "opaque"
+        data: {
+            MYSQL_ROOT_PASSWORD: "appuser123"
+        }
+    }
+    password: {
+        type: "opaque"
+        data: {
+            MYSQL_PASSWORD: "appuser123"
+        }
+    }
+}
+
+localData: {
+    config:{
+        dbConfig: {
+            dbHost: "bookstore-mysql"
+            dbName: "bookstore"
+            dbUser: "appuser"
+        }
+        railsConfig: {
+            env: "production"
+            stdout: "1"
+        }
+    }
+}
