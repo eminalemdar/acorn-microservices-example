@@ -1,0 +1,72 @@
+containers: {
+    db: {
+        image: "postgres:15-alpine"
+        scale: 1
+        dirs: {
+            "/var/lib/postgresql/data": "volume://dbdata"
+        }
+        env: {
+            "POSTGRES_USER": "secret://dbconfig/username"
+            "POSTGRES_PASSWORD": "secret://dbconfig/password"
+        }
+        ports: "5432:5432/tcp"
+        labels: {
+            service: "db"
+        }
+    }
+    redis: {
+        image: "redis:alpine"
+        scale: 1
+        dirs: {
+            "/data": "volume://redisdata"
+        }
+        ports: "6379:6379/tcp"
+        labels: {
+            service: "redis"
+        }
+    }
+    results: {
+        image: "dockersamples/examplevotingapp_result"
+        scale: 1
+        labels: {
+            service: "results"
+        }
+        ports: publish: "5001:80/http"
+    }
+    vote: {
+        image: "dockersamples/examplevotingapp_vote"
+        scale: 1
+        labels: {
+            service: "vote"
+        }
+        ports: publish: "5000:80/http"
+    }
+    worker: {
+        image: "dockersamples/examplevotingapp_worker"
+        scale: 1
+        labels: {
+            service: "worker"
+        }
+    }
+}
+
+
+
+volumes: {
+    dbdata: {
+        class: "ephemeral"
+    }
+    redisdata: {
+        class: "ephemeral"
+    }
+}
+
+secrets: {
+    dbconfig: {
+        type: "basic"
+        data: {
+            username: ""
+            password: ""
+        }
+    }
+}
