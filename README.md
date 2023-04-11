@@ -1,2 +1,3 @@
 # acorn-microservices-example
-This is an example repository for deploying an example microservice app with Acorn
+
+This is an example repository for deploying example microservice applications with Acorn
